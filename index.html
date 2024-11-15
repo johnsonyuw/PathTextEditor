@@ -3,12 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>图片编辑器</title>
+    <title>TextPath - 图片编辑与路径文字工具</title>
+    <link rel="icon" type="image/svg+xml" href="images/logo.svg">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>图片编辑器</h1>
+        <header class="site-header">
+            <div class="brand">
+                <img src="images/logo.svg" alt="TextPath Logo" class="site-logo">
+                <div class="brand-text">
+                    <h1>TextPath Editor</h1>
+                    <p class="site-description">专业的图片编辑与路径文字工具</p>
+                </div>
+            </div>
+        </header>
+
         <div class="editor-container">
             <div class="tools-panel">
                 <div class="tool-section">
@@ -17,14 +27,51 @@
                     <button id="saveBtn">保存图片</button>
                 </div>
                 
-                <div class="tool-section">
-                    <h3>编辑模式</h3>
-                    <button id="cropBtn">裁切模式</button>
-                    <button id="pathTextBtn">路径文字模式</button>
+                <div class="mode-selector">
+                    <button class="mode-btn active" data-mode="basic">基础编辑</button>
+                    <button class="mode-btn" data-mode="textpath">路径文字</button>
                 </div>
 
-                <div class="tool-section" id="pathTextControls">
-                    <h3>文字设置</h3>
+                <!-- 基础编辑模式面板 -->
+                <div class="tool-section mode-panel" id="basicEditPanel">
+                    <h3>基础编辑</h3>
+                    <div class="edit-group">
+                        <h4>裁切</h4>
+                        <button id="cropBtn">开始裁切</button>
+                        <button id="applyCropBtn" style="display: none;">应用裁切</button>
+                        <button id="cancelCropBtn" style="display: none;">取消裁切</button>
+                    </div>
+                    
+                    <div class="edit-group">
+                        <h4>旋转与翻转</h4>
+                        <div class="button-grid">
+                            <button id="rotateLeftBtn">向左旋转</button>
+                            <button id="rotateRightBtn">向右旋转</button>
+                            <button id="flipHBtn">水平翻转</button>
+                            <button id="flipVBtn">垂直翻转</button>
+                        </div>
+                    </div>
+                    
+                    <div class="edit-group">
+                        <h4>滤镜效果</h4>
+                        <div class="filter-list">
+                            <button class="filter-btn" data-filter="normal">原图</button>
+                            <button class="filter-btn" data-filter="grayscale">黑白</button>
+                            <button class="filter-btn" data-filter="sepia">复古</button>
+                            <button class="filter-btn" data-filter="warm">暖色</button>
+                            <button class="filter-btn" data-filter="cool">冷色</button>
+                            <button class="filter-btn" data-filter="vintage">老照片</button>
+                            <button class="filter-btn" data-filter="fade">褪色</button>
+                            <button class="filter-btn" data-filter="dramatic">戏剧</button>
+                            <button class="filter-btn" data-filter="bright">明亮</button>
+                            <button class="filter-btn" data-filter="dark">暗调</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 路径文字模式面板 -->
+                <div class="tool-section mode-panel" id="pathTextPanel" style="display: none;">
+                    <h3>路径文字</h3>
                     <div class="input-group">
                         <label for="pathText">文字内容：</label>
                         <input type="text" id="pathText" placeholder="输入路径文字">
@@ -32,6 +79,15 @@
                     <div class="input-group">
                         <label for="fontSize">字体大小：</label>
                         <input type="number" id="fontSize" value="20" min="10" max="100">
+                    </div>
+                    <div class="input-group">
+                        <label for="textColor">文字颜色：</label>
+                        <input type="color" id="textColor" value="#000000">
+                    </div>
+                    <div class="input-group">
+                        <label for="textSpacing">文字间距：</label>
+                        <input type="range" id="textSpacing" min="0" max="20" value="0" step="0.1">
+                        <span id="spacingValue">0px</span>
                     </div>
                 </div>
             </div>

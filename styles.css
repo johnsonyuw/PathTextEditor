@@ -56,7 +56,7 @@ h1 {
 }
 
 .input-group {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 .input-group label {
@@ -128,4 +128,188 @@ canvas {
     pointer-events: none;
     width: 800px;
     height: 600px;
+}
+
+input[type="color"] {
+    width: 100%;
+    height: 40px;
+    padding: 2px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+input[type="range"] {
+    width: 100%;
+    margin: 5px 0;
+}
+
+#spacingValue {
+    display: inline-block;
+    margin-left: 5px;
+    color: #666;
+}
+
+.site-header {
+    text-align: left;
+    margin-bottom: 30px;
+    padding: 20px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 15px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.site-logo {
+    width: 48px;
+    height: 48px;
+}
+
+.brand-text h1 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.site-description {
+    color: #666;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.site-header h1 {
+    font-size: 2em;
+    color: #4CAF50;
+    margin: 0;
+    line-height: 1.2;
+    text-align: left;
+}
+
+.site-description {
+    color: #666;
+    font-size: 1em;
+    margin: 5px 0 0 0;
+    text-align: left;
+}
+
+.mode-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 10px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 10px;
+    background-color: #f8f9fa;
+    color: #666;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.mode-btn.active {
+    background-color: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+}
+
+.mode-panel {
+    display: none;
+}
+
+.mode-panel.active {
+    display: block;
+}
+
+.tool-section {
+    background-color: white;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.undo-redo-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.undo-redo-buttons button {
+    flex: 1;
+    padding: 8px;
+}
+
+.undo-redo-buttons button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.edit-group {
+    margin-bottom: 20px;
+}
+
+.edit-group h4 {
+    margin-bottom: 10px;
+    color: #666;
+    font-size: 14px;
+}
+
+.button-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.crop-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: auto;
+}
+
+.crop-area {
+    position: absolute;
+    border: 2px solid #fff;
+    cursor: move;
+    pointer-events: auto;
+    background: none;
+}
+
+.crop-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border: 1px solid #333;
+    pointer-events: auto;
+    z-index: 2;
+}
+
+.crop-handle.nw { top: -6px; left: -6px; cursor: nw-resize; }
+.crop-handle.ne { top: -6px; right: -6px; cursor: ne-resize; }
+.crop-handle.sw { bottom: -6px; left: -6px; cursor: sw-resize; }
+.crop-handle.se { bottom: -6px; right: -6px; cursor: se-resize; }
+
+.crop-handle.n { top: -6px; left: 50%; margin-left: -6px; cursor: n-resize; }
+.crop-handle.s { bottom: -6px; left: 50%; margin-left: -6px; cursor: s-resize; }
+.crop-handle.w { left: -6px; top: 50%; margin-top: -6px; cursor: w-resize; }
+.crop-handle.e { right: -6px; top: 50%; margin-top: -6px; cursor: e-resize; }
+
+.crop-mask-top, .crop-mask-right, .crop-mask-bottom, .crop-mask-left {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.5);
+    pointer-events: none;
 } 
