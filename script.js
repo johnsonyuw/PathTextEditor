@@ -266,7 +266,7 @@ class ImageEditor {
         // 简化路径点，减少冗余点
         const simplifiedPoints = this.simplifyPath(this.pathPoints, 5);
         
-        // 将文本转换为数组，正确处理 emoji
+        // 将文本转换数组，正确处理 emoji
         const textArray = Array.from(text);
         
         // 计算实际字符宽度（考虑 emoji）
@@ -403,7 +403,7 @@ class ImageEditor {
             console.log('No image to draw');
         }
 
-        // 在成功绘制��片后保存状态
+        // 在成功绘制后��态
         this.saveToHistory('uploadImage');
     }
 
@@ -440,7 +440,7 @@ class ImageEditor {
     saveToHistory(actionName) {
         const currentTime = Date.now();
         
-        // 如果是调整结束，使用初始状态作为起点
+        // 如果是调整结束，使用初始态作为起点
         if (actionName === 'adjustText' && this.initialState) {
             // 删除调整过程中的临时状态
             while (this.currentHistoryIndex > 0 && 
@@ -475,7 +475,7 @@ class ImageEditor {
         this.history.push(currentState);
         this.currentHistoryIndex++;
 
-        // 限制历史记录长度
+        // 限制历记录长度
         if (this.history.length > this.maxHistorySteps) {
             this.history.shift();
             this.currentHistoryIndex--;
@@ -669,9 +669,6 @@ class ImageEditor {
         document.getElementById('applyCropBtn').style.display = 'inline-block';
         document.getElementById('cancelCropBtn').style.display = 'inline-block';
         
-        // 获取图片的实际显示区域
-        const imageRect = this.getImageRect();
-        
         // 创建裁切覆盖层
         const overlay = document.createElement('div');
         overlay.className = 'crop-overlay';
@@ -696,60 +693,83 @@ class ImageEditor {
         
         this.cropArea = cropArea;
         overlay.appendChild(cropArea);
-        this.mainCanvas.parentElement.appendChild(overlay);
         
-        // 设置初始裁切区域
-        const initialSize = Math.min(imageRect.width, imageRect.height) * 0.8;
-        const x = imageRect.x + (imageRect.width - initialSize) / 2;
-        const y = imageRect.y + (imageRect.height - initialSize) / 2;
+        // 将覆盖层添加到画布容器中
+        const canvasContainer = this.mainCanvas.parentElement;
+        overlay.style.width = `${canvasContainer.offsetWidth}px`;
+        overlay.style.height = `${canvasContainer.offsetHeight}px`;
+        canvasContainer.appendChild(overlay);
+
+        // 获取画布容器的位置和大小
+        const containerRect = canvasContainer.getBoundingClientRect();
         
-        this.updateCropArea(x, y, initialSize, initialSize);
+        // 计算图片在画布中的实际位置和大小（使用 floor 确保整数）
+        const scale = Math.min(
+            this.mainCanvas.width / this.originalImage.width,
+            this.mainCanvas.height / this.originalImage.height
+        );
+        
+        const scaledWidth = Math.floor(this.originalImage.width * scale);
+        const scaledHeight = Math.floor(this.originalImage.height * scale);
+        const x = Math.floor((this.mainCanvas.width - scaledWidth) / 2);
+        const y = Math.floor((this.mainCanvas.height - scaledHeight) / 2);
+        
+        // 转换为屏幕坐标（相对于容器）
+        const displayScale = containerRect.width / this.mainCanvas.width;
+        const imageDisplayX = Math.floor(x * displayScale);
+        const imageDisplayY = Math.floor(y * displayScale);
+        const imageDisplayWidth = Math.floor(scaledWidth * displayScale);
+        const imageDisplayHeight = Math.floor(scaledHeight * displayScale);
+        
+        // 设置初始裁切区域大小（基于图片实际显示大小）
+        const initialSize = Math.floor(Math.min(imageDisplayWidth, imageDisplayHeight) * 0.8);
+        
+        // 计算初始裁切区域位置（居中）
+        const cropX = Math.floor(imageDisplayX + (imageDisplayWidth - initialSize) / 2);
+        const cropY = Math.floor(imageDisplayY + (imageDisplayHeight - initialSize) / 2);
+        
+        // 更新裁切区域
+        this.updateCropArea(cropX, cropY, initialSize, initialSize);
         
         // 添加事件监听
         this.setupCropAreaEvents();
     }
 
-    // 获取图片实际显示区域
-    getImageRect() {
-        const canvas = this.mainCanvas;
-        const ctx = this.ctx;
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        let left = canvas.width, right = 0, top = canvas.height, bottom = 0;
-
-        // 扫描图像数据找到非透明像素的边界
-        for (let y = 0; y < canvas.height; y++) {
-            for (let x = 0; x < canvas.width; x++) {
-                const alpha = imageData.data[(y * canvas.width + x) * 4 + 3];
-                if (alpha > 0) {
-                    left = Math.min(left, x);
-                    right = Math.max(right, x);
-                    top = Math.min(top, y);
-                    bottom = Math.max(bottom, y);
-                }
-            }
-        }
-
-        return {
-            x: left,
-            y: top,
-            width: right - left,
-            height: bottom - top
-        };
-    }
-
     updateCropArea(x, y, width, height) {
-        const imageRect = this.getImageRect();
-        const canvasRect = this.mainCanvas.getBoundingClientRect();
+        const containerRect = this.mainCanvas.parentElement.getBoundingClientRect();
         
-        // 计算相对于画布的位置
-        const relativeX = x + canvasRect.left;
-        const relativeY = y + canvasRect.top;
+        // 计算图片在画布中的实际位置和大小
+        const scale = Math.min(
+            this.mainCanvas.width / this.originalImage.width,
+            this.mainCanvas.height / this.originalImage.height
+        );
         
-        // 限制在画布范围内
-        const newX = Math.max(canvasRect.left, Math.min(relativeX, canvasRect.right - width));
-        const newY = Math.max(canvasRect.top, Math.min(relativeY, canvasRect.bottom - height));
-        const newWidth = Math.max(50, Math.min(width, canvasRect.right - newX));
-        const newHeight = Math.max(50, Math.min(height, canvasRect.bottom - newY));
+        const scaledWidth = Math.floor(this.originalImage.width * scale);
+        const scaledHeight = Math.floor(this.originalImage.height * scale);
+        const imageX = Math.floor((this.mainCanvas.width - scaledWidth) / 2);
+        const imageY = Math.floor((this.mainCanvas.height - scaledHeight) / 2);
+        
+        // 转换为屏幕坐标（相对于容器）
+        const displayScale = containerRect.width / this.mainCanvas.width;
+        
+        // 使用 floor 确保精确对齐
+        const imageDisplayX = Math.floor(imageX * displayScale);
+        const imageDisplayY = Math.floor(imageY * displayScale);
+        const imageDisplayWidth = Math.floor(scaledWidth * displayScale);
+        const imageDisplayHeight = Math.floor(scaledHeight * displayScale);
+        
+        // 限制裁切框在图片范围内
+        const newX = Math.floor(Math.max(imageDisplayX, Math.min(x, imageDisplayX + imageDisplayWidth - width)));
+        const newY = Math.floor(Math.max(imageDisplayY, Math.min(y, imageDisplayY + imageDisplayHeight - height)));
+        
+        // 限制最小尺寸和最大尺寸
+        const minSize = 50;
+        const maxWidth = imageDisplayWidth;
+        const maxHeight = imageDisplayHeight;
+        
+        // 确保宽高不超过图片范围
+        const newWidth = Math.floor(Math.max(minSize, Math.min(width, maxWidth, imageDisplayX + imageDisplayWidth - newX)));
+        const newHeight = Math.floor(Math.max(minSize, Math.min(height, maxHeight, imageDisplayY + imageDisplayHeight - newY)));
         
         // 更新裁切区域位置和大小
         this.cropArea.style.left = `${newX}px`;
@@ -757,49 +777,49 @@ class ImageEditor {
         this.cropArea.style.width = `${newWidth}px`;
         this.cropArea.style.height = `${newHeight}px`;
         
-        // 更新四个遮罩区域
+        // 计算遮罩区域尺寸（确保完全覆盖图片区域）
+        const topHeight = newY - imageDisplayY;
+        const rightWidth = imageDisplayX + imageDisplayWidth - (newX + newWidth);
+        const bottomHeight = imageDisplayY + imageDisplayHeight - (newY + newHeight);
+        const leftWidth = newX - imageDisplayX;
+        
+        // 更新遮罩区域
         const overlay = this.cropArea.parentElement;
         const maskTop = overlay.querySelector('.crop-mask-top');
         const maskRight = overlay.querySelector('.crop-mask-right');
         const maskBottom = overlay.querySelector('.crop-mask-bottom');
         const maskLeft = overlay.querySelector('.crop-mask-left');
         
-        // 上遮罩
-        maskTop.style.left = `${canvasRect.left}px`;
-        maskTop.style.top = `${canvasRect.top}px`;
-        maskTop.style.width = `${canvasRect.width}px`;
-        maskTop.style.height = `${newY - canvasRect.top}px`;
+        // 设置遮罩区域位置和尺寸（使用精确的整数值）
+        maskTop.style.left = `${imageDisplayX}px`;
+        maskTop.style.top = `${imageDisplayY}px`;
+        maskTop.style.width = `${imageDisplayWidth}px`;
+        maskTop.style.height = `${topHeight}px`;
         
-        // 右遮罩
         maskRight.style.left = `${newX + newWidth}px`;
         maskRight.style.top = `${newY}px`;
-        maskRight.style.width = `${canvasRect.right - (newX + newWidth)}px`;
+        maskRight.style.width = `${rightWidth}px`;
         maskRight.style.height = `${newHeight}px`;
         
-        // 下遮罩
-        maskBottom.style.left = `${canvasRect.left}px`;
+        maskBottom.style.left = `${imageDisplayX}px`;
         maskBottom.style.top = `${newY + newHeight}px`;
-        maskBottom.style.width = `${canvasRect.width}px`;
-        maskBottom.style.height = `${canvasRect.bottom - (newY + newHeight)}px`;
+        maskBottom.style.width = `${imageDisplayWidth}px`;
+        maskBottom.style.height = `${bottomHeight}px`;
         
-        // 左遮罩
-        maskLeft.style.left = `${canvasRect.left}px`;
+        maskLeft.style.left = `${imageDisplayX}px`;
         maskLeft.style.top = `${newY}px`;
-        maskLeft.style.width = `${newX - canvasRect.left}px`;
+        maskLeft.style.width = `${leftWidth}px`;
         maskLeft.style.height = `${newHeight}px`;
         
-        // 保存实际的裁切坐标和尺寸（用于最终裁切）
-        // 转换为画布坐标系
-        const scaleX = this.mainCanvas.width / canvasRect.width;
-        const scaleY = this.mainCanvas.height / canvasRect.height;
-        
+        // 保存实际的裁切坐标和尺寸
         this.cropStart = {
-            x: (newX - canvasRect.left) * scaleX,
-            y: (newY - canvasRect.top) * scaleY
+            x: Math.floor(newX / displayScale),
+            y: Math.floor(newY / displayScale)
         };
+        
         this.cropSize = {
-            width: newWidth * scaleX,
-            height: newHeight * scaleY
+            width: Math.floor(newWidth / displayScale),
+            height: Math.floor(newHeight / displayScale)
         };
     }
 
@@ -876,58 +896,64 @@ class ImageEditor {
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
         
-        // 获取原始画布的尺寸
-        const originalWidth = this.mainCanvas.width;
-        const originalHeight = this.mainCanvas.height;
+        // 获取原始画布的尺寸和图像实际区域
+        const imageRect = this.getImageRect();
+        const originalWidth = imageRect.width;
+        const originalHeight = imageRect.height;
         
-        // 根据旋转角度决定是否需要交换宽高
-        const needSwap = Math.abs(angle % 180) === 90;
-        tempCanvas.width = needSwap ? originalHeight : originalWidth;
-        tempCanvas.height = needSwap ? originalWidth : originalHeight;
+        // 计算旋转后的尺寸
+        const radian = Math.abs(angle * Math.PI / 180);
+        const rotatedWidth = Math.abs(originalWidth * Math.cos(radian)) + Math.abs(originalHeight * Math.sin(radian));
+        const rotatedHeight = Math.abs(originalWidth * Math.sin(radian)) + Math.abs(originalHeight * Math.cos(radian));
+        
+        // 设置临时画布尺寸为旋转后的尺寸
+        tempCanvas.width = rotatedWidth;
+        tempCanvas.height = rotatedHeight;
         
         // 清除临时画布
         tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
         
-        // 移动到中心点
+        // 移动到临时画布中心点
         tempCtx.save();
         tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
         tempCtx.rotate(angle * Math.PI / 180);
         
-        // 如果是90度的倍数，直接使用原始尺寸
-        if (this.currentRotation % 90 === 0) {
-            tempCtx.drawImage(
-                this.mainCanvas,
-                -originalWidth / 2,
-                -originalHeight / 2,
-                originalWidth,
-                originalHeight
-            );
-        } else {
-            // 对于其他角度，需要计算适当的缩放比例
-            const scale = Math.min(
-                tempCanvas.width / originalWidth,
-                tempCanvas.height / originalHeight
-            );
-            
-            tempCtx.drawImage(
-                this.mainCanvas,
-                -originalWidth * scale / 2,
-                -originalHeight * scale / 2,
-                originalWidth * scale,
-                originalHeight * scale
-            );
-        }
+        // 绘制图像，保持原始尺寸
+        tempCtx.drawImage(
+            this.mainCanvas,
+            imageRect.x, imageRect.y, originalWidth, originalHeight,
+            -originalWidth / 2, -originalHeight / 2, originalWidth, originalHeight
+        );
         
         tempCtx.restore();
         
-        // 更新主画布
-        this.mainCanvas.width = tempCanvas.width;
-        this.mainCanvas.height = tempCanvas.height;
-        this.ctx.drawImage(tempCanvas, 0, 0);
+        // 计算主画布新尺寸，保持原始画布大小
+        const mainCanvasWidth = this.mainCanvas.width;
+        const mainCanvasHeight = this.mainCanvas.height;
+        
+        // 计算缩放比例，确保旋转后的图像完全适应画布
+        const scale = Math.min(
+            mainCanvasWidth / rotatedWidth,
+            mainCanvasHeight / rotatedHeight
+        );
+        
+        // 计算居中位置
+        const centerX = (mainCanvasWidth - rotatedWidth * scale) / 2;
+        const centerY = (mainCanvasHeight - rotatedHeight * scale) / 2;
+        
+        // 清除主画布
+        this.ctx.clearRect(0, 0, mainCanvasWidth, mainCanvasHeight);
+        
+        // 在主画布上绘制缩放后的图像
+        this.ctx.drawImage(
+            tempCanvas,
+            0, 0, rotatedWidth, rotatedHeight,
+            centerX, centerY, rotatedWidth * scale, rotatedHeight * scale
+        );
         
         // 同步临时画布尺寸
-        this.tempCanvas.width = tempCanvas.width;
-        this.tempCanvas.height = tempCanvas.height;
+        this.tempCanvas.width = mainCanvasWidth;
+        this.tempCanvas.height = mainCanvasHeight;
         
         this.saveToHistory('rotate');
     }
@@ -987,7 +1013,7 @@ class ImageEditor {
                 
             case 'warm':
                 for (let i = 0; i < pixels.length; i += 4) {
-                    pixels[i] = Math.min(255, pixels[i] * 1.1); // 增加红��
+                    pixels[i] = Math.min(255, pixels[i] * 1.1); // 增加红色
                     pixels[i + 2] = Math.max(0, pixels[i + 2] * 0.9); // 减少蓝色
                 }
                 break;
